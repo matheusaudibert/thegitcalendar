@@ -1,6 +1,6 @@
 # Resolutions
 
-Reference list of device resolutions supported by [`/graph`](README.md), used via the `height` and `width` query params. Pick any device below, or use custom values.
+Reference list of device resolutions supported by [`/graph`](README.md), used via the `height` and `width` query params. Pick any device below.
 
 ## iPhone
 
