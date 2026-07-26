@@ -17,6 +17,7 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
+from .clock import today as clock_today
 from .github_client import YearContributions, days_in_year
 from .themes import (
     DEFAULT_BG,
@@ -126,7 +127,7 @@ def render_wallpaper(
 ) -> Image.Image:
     year = contrib.year
     total_days = days_in_year(year)
-    today = date.today()
+    today = clock_today()
 
     img = Image.new("RGBA", (options.width, options.height), options.bg_color)
     draw = ImageDraw.Draw(img)

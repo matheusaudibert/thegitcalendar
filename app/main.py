@@ -6,7 +6,6 @@ separate frontend/automation repo is expected to call this API.
 from __future__ import annotations
 
 import re
-from datetime import date
 from typing import Literal
 
 from fastapi import FastAPI, HTTPException, Query, Request
@@ -19,6 +18,7 @@ from fastapi.responses import PlainTextResponse, Response
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from .cache import TTLCache
+from .clock import today as clock_today
 from .github_client import (
     GitHubFetchError,
     GitHubUserNotFoundError,
@@ -31,7 +31,6 @@ from .themes import (
     BACKGROUND_THEMES,
     COLOR_THEMES,
     DEFAULT_FOOTER_PRIMARY,
-    DEFAULT_FOOTER_SECONDARY,
     DEFAULT_HEIGHT,
     DEFAULT_WIDTH,
     SUPPORTED_RESOLUTIONS,
@@ -164,7 +163,6 @@ async def _not_found_handler(request: Request, exc: StarletteHTTPException):
 @app.get("/graph")
 async def get_wallpaper(
     username: str = Query(..., description="GitHub username to render"),
-    year: int = Query(default_factory=lambda: date.today().year),
     width: str | None = Query(
         None,
         description="Output width in px — must pair with a matching `height` from the supported "
@@ -179,37 +177,11 @@ async def get_wallpaper(
         "github",
         description="Named background preset: github, dark, or light. Falls back to github if unrecognized",
     ),
-    colors: str | None = Query(
-        None,
-        description="5 comma-separated hex colors for contribution levels 0-4 — a full manual "
-        "override. If omitted, level 0 follows the `background` theme and levels 1-4 follow "
-        "`color` (or green). Ignored if `color` is set.",
-    ),
     color: str | None = Query(
         None,
         description="Named color theme for levels 1-4: green, blue, purple, red, yellow, orange, "
-        "pink, white, black. Falls back to green if unrecognized; overrides `colors`",
+        "pink, white, black. Falls back to green if unrecognized",
     ),
-    future_color: str | None = Query(
-        None, description="Color for days after today; defaults to the `background` theme's shade"
-    ),
-    today_color: str | None = Query(
-        None,
-        description="Highlight color for today; defaults to a shade that matches `background`. Pass 'none' to disable",
-    ),
-    fill_ratio: float = Query(0.82, gt=0.05, le=1.0, description="Dot/square size relative to its cell"),
-    margin_ratio: float = Query(0.105, ge=0.0, le=0.3, description="Left/right margin relative to width"),
-    top_margin_ratio: float = Query(0.25, ge=0.0, le=0.6, description="Space above the grid relative to height"),
-    footer_gap_ratio: float = Query(0.025, ge=0.0, le=0.2, description="Gap between grid and footer text relative to height"),
-    columns: int = Query(15, ge=1, le=366, description="Fixed number of dots/squares per row"),
-    footer: bool = Query(True, description="Show the stats footer text"),
-    footer_template: str = Query("{commits} commits"),
-    footer_secondary_template: str = Query("this year"),
-    footer_primary_color: str | None = Query(
-        None, description="Primary footer text color; defaults to the theme's brightest level color, or green"
-    ),
-    footer_secondary_color: str = Query(DEFAULT_FOOTER_SECONDARY),
-    profile: bool = Query(True, description="Show the avatar + @username below the footer text"),
 ) -> Response:
     width_px, height_px = _resolve_resolution(width, height)
     if background not in BACKGROUND_THEMES:
@@ -221,56 +193,25 @@ async def get_wallpaper(
         username = _validate_username(username)
 
         theme = BACKGROUND_THEMES[background]
-        resolved_bg = theme["bg"]
-        resolved_empty = theme["empty"]
-        resolved_future_default = theme["future"]
-        resolved_today_default = theme["today"]
-
-        if colors is not None:
-            resolved_levels = colors
-        else:
-            resolved_levels = ",".join([resolved_empty, *COLOR_THEMES[color or "green"]])
-
-        if footer_primary_color is not None:
-            resolved_footer_primary = footer_primary_color
-        elif color:
-            resolved_footer_primary = COLOR_THEMES[color][-1]
-        else:
-            resolved_footer_primary = DEFAULT_FOOTER_PRIMARY
-
-        resolved_future = future_color if future_color is not None else resolved_future_default
-        resolved_today = today_color if today_color is not None else resolved_today_default
+        resolved_levels = ",".join([theme["empty"], *COLOR_THEMES[color or "green"]])
+        resolved_footer_primary = COLOR_THEMES[color][-1] if color else DEFAULT_FOOTER_PRIMARY
 
         try:
             options = WallpaperOptions(
                 width=width_px,
                 height=height_px,
                 shape=shape,
-                bg_color=parse_hex_color(resolved_bg),
+                bg_color=parse_hex_color(theme["bg"]),
                 level_colors=parse_level_colors(resolved_levels),
-                future_color=parse_hex_color(resolved_future),
-                today_color=(
-                    None
-                    if today_color is not None and today_color.lower() == "none"
-                    else parse_hex_color(resolved_today)
-                ),
-                fill_ratio=fill_ratio,
-                margin_ratio=margin_ratio,
-                top_margin_ratio=top_margin_ratio,
-                footer_gap_ratio=footer_gap_ratio,
-                columns=columns,
-                show_footer=footer,
-                footer_template=footer_template,
-                footer_secondary_template=footer_secondary_template,
+                future_color=parse_hex_color(theme["future"]),
+                today_color=parse_hex_color(theme["today"]),
                 footer_primary_color=parse_hex_color(resolved_footer_primary),
-                footer_secondary_color=parse_hex_color(footer_secondary_color),
-                show_profile=profile,
             )
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-        contrib = await _get_year_contributions(username, year)
-        avatar_bytes = await _get_avatar(username) if profile else None
+        contrib = await _get_year_contributions(username, clock_today().year)
+        avatar_bytes = await _get_avatar(username)
         png_bytes = render_wallpaper_png(contrib, options, avatar_bytes)
 
         return Response(

@@ -1,10 +1,3 @@
-"""Tiny in-memory TTL cache so repeated wallpaper/contributions requests for the
-same user+year don't hammer github.com on every automation tick.
-
-Not shared across processes — fine for a single-instance deployment. Swap for
-Redis if you ever run this behind multiple workers.
-"""
-
 from __future__ import annotations
 
 import asyncio
