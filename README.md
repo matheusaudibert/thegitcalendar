@@ -1,6 +1,6 @@
 <div align="center">
 
-<a href="https://thegitcalendar.vercel.app/"><img src="app/assets/preview.png" alt="The Git Calendar" width=600px></a>
+<a href="https://thegitcalendar.vercel.app/"><img src="app/assets/preview.png" alt="The Git Calendar" height=100% width=auto></a>
 
 [![GitHub Stars](https://img.shields.io/github/stars/matheusaudibert/thegitcalendar.svg?style=flat&logo=github)](https://github.com/matheusaudibert/thegitcalendar/stargazers)
 [![Website](https://img.shields.io/website?url=https%3A%2F%2Fcommitly.audibert.dev&style=flat&logo=vercel&label=website)](https://thegitcalendar.vercel.app/)
