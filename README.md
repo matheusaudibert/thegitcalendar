@@ -1,4 +1,6 @@
-# [thegitcallendar](https://thegitcalendar.vercel.app/)
+<a href="https://vaguinhas.audibert.dev"><img src="app/assets/preview.png" alt="Vaguinhas" height=100% width=auto></a>
+
+# [thegitcallendar]
 
 Backend API that turns a GitHub username into a **yearly commit wallpaper**, one commit dot per day of the year, colored by that day's GitHub contribution
 intensity.
@@ -30,6 +32,13 @@ Example with all params:
 ```
 GET https://gitcallendar-image.vercel.app/graph?username=matheusaudibert&background=github&color=green&shape=rounded&height=2556&width=1179
 ```
+Image example:
+
+<a href="https://vaguinhas.audibert.dev"><img src="https://gitcallendar-image.vercel.app/graph?username=matheusaudibert" alt="Vaguinhas" height=400px></a>
+
+#### Live examples
+
+Chekout the [EXAMPLES.md](EXAMPLES.md) to see all the possible example.
 
 #### Resolutions
 
