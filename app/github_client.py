@@ -18,7 +18,7 @@ import httpx
 
 CONTRIBUTIONS_URL = "https://github.com/users/{username}/contributions"
 AVATAR_URL = "https://github.com/{username}.png"
-USER_AGENT = "gitcallendar/1.0 (+https://github.com/) contribution-graph-reader"
+USER_AGENT = "gitcalendar/1.0 (+https://github.com/) contribution-graph-reader"
 REQUEST_TIMEOUT = 10.0
 
 _TD_OPEN_RE = re.compile(r"<td\s+([^>]*)>")

@@ -7,7 +7,7 @@ from typing import Awaitable, Callable, Generic, TypeVar
 
 T = TypeVar("T")
 
-DEFAULT_TTL_SECONDS = int(os.environ.get("GITCALLENDAR_CACHE_TTL", "3600"))
+DEFAULT_TTL_SECONDS = int(os.environ.get("GITcalendar_CACHE_TTL", "3600"))
 
 
 class TTLCache(Generic[T]):

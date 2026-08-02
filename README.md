@@ -1,6 +1,6 @@
 <a href="https://thegitcalendar.vercel.app/"><img src="app/assets/preview.png" alt="The Git Calendar" height=100% width=auto></a>
 
-# [thegitcallendar]
+# thegitcalendar
 
 Backend API that turns a GitHub username into a **yearly commit wallpaper**, one commit dot per day of the year, colored by that day's GitHub contribution
 intensity.
@@ -25,16 +25,16 @@ Renders the wallpaper image. `username` is the only required param, everything e
 Example:
 
 ```
-GET https://gitcallendar-image.vercel.app/graph?username=matheusaudibert
+GET https://gitcalendar-image.vercel.app/graph?username=matheusaudibert
 ```
 
 Example with all params: 
 ```
-GET https://gitcallendar-image.vercel.app/graph?username=matheusaudibert&background=github&color=green&shape=rounded&height=2556&width=1179
+GET https://gitcalendar-image.vercel.app/graph?username=matheusaudibert&background=github&color=green&shape=rounded&height=2556&width=1179
 ```
 Image example:
 
-<a href="https://thegitcalendar.vercel.app/"><img src="https://gitcallendar-image.vercel.app/graph?username=matheusaudibert" alt="The Git Calendar" height=400px></a>
+<a href="https://thegitcalendar.vercel.app/"><img src="https://gitcalendar-image.vercel.app/graph?username=matheusaudibert" alt="The Git Calendar" height=400px></a>
 
 #### Live examples
 

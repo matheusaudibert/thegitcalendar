@@ -1,4 +1,4 @@
-"""gitcallendar backend: turns a GitHub username into a yearly commit-dot
+"""gitcalendar backend: turns a GitHub username into a yearly commit-dot
 wallpaper image (and the raw data behind it). Pure backend — no UI here; a
 separate frontend/automation repo is expected to call this API.
 """
@@ -39,7 +39,7 @@ from .themes import (
 )
 
 app = FastAPI(
-    title="gitcallendar",
+    title="gitcalendar",
     description=(
         "Generates a yearly GitHub-commit wallpaper image for a given username, "
         "in the style of thelifecalendar — one dot per day, colored by that "
