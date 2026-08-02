@@ -126,8 +126,28 @@ COLOR_THEMES: dict[str, list[str]] = {
     "orange": ["7a3d00", "a15c00", "d1791b", "ffa657"],
     "pink": ["6e1440", "9e165f", "bf3989", "ff9bce"],
     "white": ["3d444d", "6e7681", "b1bac4", "ffffff"],
-    "black": ["1a1a1a", "111111", "080808", "000000"],
+    "black": ["333333", "212121", "121212", "000000"],
 }
+
+# The footer's "N commits" normally uses the color theme's brightest shade as
+# its accent, but a few background/color pairs make that shade the same as the
+# background — white text on the light theme, black text on the dark ones —
+# and the text just disappears. For those combos it falls back to the neutral
+# gray already used by "this year", so both halves stay readable.
+_INVISIBLE_FOOTER_COMBOS: set[tuple[str, str]] = {
+    ("light", "white"),
+    ("github", "black"),
+    ("dark", "black"),
+}
+
+
+def resolve_footer_primary(background: str, color: str | None) -> str:
+    """Hex accent for the footer's primary text, given the requested theme."""
+    if color is None:
+        return DEFAULT_FOOTER_PRIMARY
+    if (background, color) in _INVISIBLE_FOOTER_COMBOS:
+        return DEFAULT_FOOTER_SECONDARY
+    return COLOR_THEMES[color][-1]
 
 
 def parse_hex_color(value: str) -> tuple[int, int, int, int]:

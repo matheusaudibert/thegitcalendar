@@ -30,12 +30,12 @@ from .render import WallpaperOptions, render_error_png, render_wallpaper_png
 from .themes import (
     BACKGROUND_THEMES,
     COLOR_THEMES,
-    DEFAULT_FOOTER_PRIMARY,
     DEFAULT_HEIGHT,
     DEFAULT_WIDTH,
     SUPPORTED_RESOLUTIONS,
     parse_hex_color,
     parse_level_colors,
+    resolve_footer_primary,
 )
 
 app = FastAPI(
@@ -113,8 +113,10 @@ def _error_image_response(
     sets the result as the lock screen on a schedule) still gets one, and it
     still honors `background`/`color` when those were valid.
     """
-    theme = BACKGROUND_THEMES.get(background, BACKGROUND_THEMES["github"])
-    accent_hex = COLOR_THEMES[color][-1] if color in COLOR_THEMES else DEFAULT_FOOTER_PRIMARY
+    if background not in BACKGROUND_THEMES:
+        background = "github"
+    theme = BACKGROUND_THEMES[background]
+    accent_hex = resolve_footer_primary(background, color if color in COLOR_THEMES else None)
     png_bytes = render_error_png(
         width=width,
         height=height,
@@ -194,7 +196,7 @@ async def get_wallpaper(
 
         theme = BACKGROUND_THEMES[background]
         resolved_levels = ",".join([theme["empty"], *COLOR_THEMES[color or "green"]])
-        resolved_footer_primary = COLOR_THEMES[color][-1] if color else DEFAULT_FOOTER_PRIMARY
+        resolved_footer_primary = resolve_footer_primary(background, color)
 
         try:
             options = WallpaperOptions(
