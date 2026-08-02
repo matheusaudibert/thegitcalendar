@@ -1,4 +1,4 @@
-# [gitcallendar](https://thegitcallendar.com)
+# [thegitcallendar](https://thegitcalendar.vercel.app/)
 
 Backend API that turns a GitHub username into a **yearly commit wallpaper**, one commit dot per day of the year, colored by that day's GitHub contribution
 intensity.
