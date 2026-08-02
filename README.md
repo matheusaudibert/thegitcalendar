@@ -1,4 +1,4 @@
-<a href="https://vaguinhas.audibert.dev"><img src="app/assets/preview.png" alt="Vaguinhas" height=100% width=auto></a>
+<a href="https://thegitcalendar.vercel.app/"><img src="app/assets/preview.png" alt="The Git Calendar" height=100% width=auto></a>
 
 # [thegitcallendar]
 
@@ -34,7 +34,7 @@ GET https://gitcallendar-image.vercel.app/graph?username=matheusaudibert&backgro
 ```
 Image example:
 
-<a href="https://vaguinhas.audibert.dev"><img src="https://gitcallendar-image.vercel.app/graph?username=matheusaudibert" alt="Vaguinhas" height=400px></a>
+<a href="https://thegitcalendar.vercel.app/"><img src="https://gitcallendar-image.vercel.app/graph?username=matheusaudibert" alt="The Git Calendar" height=400px></a>
 
 #### Live examples
 
