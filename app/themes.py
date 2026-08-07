@@ -105,6 +105,20 @@ SUPPORTED_RESOLUTIONS: set[tuple[int, int]] = {
     (1440, 3200),
     (1440, 3216),
     (1644, 3840),
+    # Mac / desktop screens (landscape: width > height) — auto-fit grid mode
+    # kicks in automatically for these in render.py, since the fixed-column
+    # portrait layout doesn't fit a wide short canvas.
+    (1920, 1080),  # Generic Full HD
+    (2560, 1440),  # Generic QHD
+    (3840, 2160),  # Generic 4K
+    (2560, 1600),  # MacBook Pro 13" (2560x1600) / MacBook Air 13" (older)
+    (2560, 1664),  # MacBook Air 13" (M2/M3/M4)
+    (2880, 1864),  # MacBook Air 15"
+    (3024, 1964),  # MacBook Pro 14"
+    (3456, 2234),  # MacBook Pro 16"
+    (4480, 2520),  # iMac 24"
+    (5120, 2880),  # Studio Display / Generic 5K
+    (6016, 3384),  # Pro Display XDR
 }
 
 DEFAULT_LEVEL_COLORS = ["161b22", "0e4429", "006d32", "26a641", "39d353"]

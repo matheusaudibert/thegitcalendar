@@ -2,6 +2,22 @@
 
 Reference list of device resolutions supported by [`/graph`](README.md), used via the `height` and `width` query params. Pick any device below.
 
+## Mac / Desktop
+
+| Device | Height | Width |
+|---|---|---|
+| Generic Full HD | 1080 | 1920 |
+| Generic QHD | 1440 | 2560 |
+| Generic 4K | 2160 | 3840 |
+| MacBook Pro 13" / MacBook Air 13" (older) | 1600 | 2560 |
+| MacBook Air 13" (M2/M3/M4) | 1664 | 2560 |
+| MacBook Air 15" | 1864 | 2880 |
+| MacBook Pro 14" | 1964 | 3024 |
+| MacBook Pro 16" | 2234 | 3456 |
+| iMac 24" | 2520 | 4480 |
+| Studio Display / Generic 5K | 2880 | 5120 |
+| Pro Display XDR | 3384 | 6016 |
+
 ## iPhone
 
 | Device | Height | Width |

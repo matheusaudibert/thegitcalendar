@@ -72,7 +72,12 @@ class WallpaperOptions:
     fill_ratio: float = 0.82
     margin_ratio: float = 0.105
     top_margin_ratio: float = 0.25
-    footer_gap_ratio: float = 0.025
+    # Footer ratios below are all relative to `cell` (the actual rendered dot
+    # size), not canvas width/height — so text and avatar stay proportional to
+    # the grid itself in both fixed-column (portrait) and auto-fit (landscape)
+    # modes, instead of ballooning when the grid doesn't fill the canvas.
+    footer_font_ratio: float = 0.684
+    footer_gap_ratio: float = 1.03
     columns: int | None = 15
     show_footer: bool = True
     footer_template: str = "{commits} commits"
@@ -84,8 +89,10 @@ class WallpaperOptions:
         default_factory=lambda: parse_hex_color(DEFAULT_FOOTER_SECONDARY)
     )
     show_profile: bool = True
-    avatar_size_ratio: float = 0.045
-    profile_gap_ratio: float = 0.018
+    avatar_size_ratio: float = 0.854
+    profile_font_ratio: float = 0.494
+    profile_gap_ratio: float = 0.741
+    profile_row_gap_ratio: float = 0.19
 
 
 def _best_grid(total: int, usable_w: float, usable_h: float) -> tuple[int, int, float]:
@@ -132,10 +139,13 @@ def render_wallpaper(
     img = Image.new("RGBA", (options.width, options.height), options.bg_color)
     draw = ImageDraw.Draw(img)
 
-    if options.columns:
+    if options.columns and options.height >= options.width:
         # Fixed-column mode (the default): size the grid from the reference
         # canvas, not the live one, so it stays a constant pixel size across
         # resolutions, then center that fixed block in the live canvas.
+        # Only applies to portrait/square canvases — the reference canvas is
+        # portrait, so centering its fixed block in a wide landscape (Mac)
+        # canvas would push it off the top instead of filling the screen.
         ref_margin_x = _REFERENCE_WIDTH * options.margin_ratio
         ref_usable_w = _REFERENCE_WIDTH - 2 * ref_margin_x
         columns = options.columns
@@ -147,22 +157,25 @@ def render_wallpaper(
         offset_y = _REFERENCE_HEIGHT * options.top_margin_ratio + (
             options.height - _REFERENCE_HEIGHT
         ) / 2
-        size_basis_w = _REFERENCE_WIDTH
-        size_basis_h = _REFERENCE_HEIGHT
     else:
         # Auto-fit mode: pack the grid into whatever live canvas it's given,
-        # instead of holding it to a fixed pixel size.
+        # instead of holding it to a fixed pixel size. Used for landscape
+        # (Mac/desktop) canvases — margins are symmetric and the whole
+        # grid+footer block is vertically centered, unlike the portrait
+        # layout which anchors near the top to clear a lock-screen clock.
         margin_x = options.width * options.margin_ratio
-        top_margin = options.height * options.top_margin_ratio
+        margin_y = options.height * options.margin_ratio
         usable_w = options.width - 2 * margin_x
-        usable_h = options.height - top_margin - options.height * 0.15
+        footer_reserve = options.height * 0.14 if options.show_footer else 0
+        usable_h = options.height - 2 * margin_y - footer_reserve
         columns, rows, cell = _best_grid(total_days, usable_w, usable_h)
         grid_w = cell * columns
         grid_h = cell * rows
         offset_x = margin_x + (usable_w - grid_w) / 2
-        offset_y = top_margin
-        size_basis_w = options.width
-        size_basis_h = options.height
+        # Footer height estimate (gap + commits line + gap + avatar row) for
+        # centering purposes only — a few px off if there's no avatar is fine.
+        footer_h = cell * 3.4 if options.show_footer else 0
+        offset_y = (options.height - grid_h - footer_h) / 2
 
     radius = cell * options.fill_ratio / 2
     commits_so_far = 0
@@ -216,10 +229,10 @@ def render_wallpaper(
             else ""
         )
 
-        primary_font = _load_font(max(10, round(size_basis_w * 0.036)), bold=False)
+        primary_font = _load_font(max(10, round(cell * options.footer_font_ratio)), bold=False)
         secondary_font = primary_font
 
-        line_top = offset_y + grid_h + size_basis_h * options.footer_gap_ratio - 3
+        line_top = offset_y + grid_h + cell * options.footer_gap_ratio - 3
         part_gap = draw.textlength(" ", font=primary_font)
 
         primary_bbox = draw.textbbox((0, 0), primary_text, font=primary_font)
@@ -253,18 +266,18 @@ def render_wallpaper(
 
         if options.show_profile and avatar_bytes:
             primary_h = primary_bbox[3] - primary_bbox[1]
-            avatar_diameter = round(size_basis_w * options.avatar_size_ratio)
+            avatar_diameter = round(cell * options.avatar_size_ratio)
             avatar = _circular(Image.open(io.BytesIO(avatar_bytes)), avatar_diameter)
 
             username_text = f"@{contrib.username}"
-            profile_font = _load_font(max(10, round(size_basis_w * 0.026)))
+            profile_font = _load_font(max(10, round(cell * options.profile_font_ratio)))
             username_bbox = draw.textbbox((0, 0), username_text, font=profile_font)
             username_w = username_bbox[2] - username_bbox[0]
             username_h = username_bbox[3] - username_bbox[1]
 
-            profile_gap = size_basis_w * 0.01
+            profile_gap = cell * options.profile_row_gap_ratio
             row_w = avatar_diameter + profile_gap + username_w
-            row_top = line_top + primary_h + size_basis_h * options.profile_gap_ratio
+            row_top = line_top + primary_h + cell * options.profile_gap_ratio
             row_x = options.width / 2 - row_w / 2
 
             img.paste(avatar, (round(row_x), round(row_top)), avatar)

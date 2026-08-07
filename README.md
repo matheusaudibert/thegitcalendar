@@ -41,9 +41,17 @@ Example with all params:
 ```
 GET https://gitcalendar-image.vercel.app/graph?username=matheusaudibert&background=github&color=green&shape=rounded&height=2556&width=1179
 ```
-Image example:
+Image example (mobile):
 
 <a href="https://thegitcalendar.vercel.app/"><img src="https://gitcalendar-image.vercel.app/graph?username=matheusaudibert" alt="The Git Calendar" height=400px></a>
+
+Image example (Mac/desktop — landscape auto-fits the grid instead of the fixed phone layout):
+
+```
+GET https://gitcalendar-image.vercel.app/graph?username=matheusaudibert&width=3024&height=1964
+```
+
+<a href="https://thegitcalendar.vercel.app/"><img src="https://gitcalendar-image.vercel.app/graph?username=matheusaudibert&width=3024&height=1964" alt="The Git Calendar (Mac)" width=600px></a>
 
 #### Live examples
 
@@ -51,7 +59,7 @@ Chekout the [EXAMPLES.md](EXAMPLES.md) to see all the possible example.
 
 #### Resolutions
 
-Supports multiple resolutions, for both iPhone and Android devices. All available resolutions are listed in [RESOLUTIONS.md](RESOLUTIONS.md).
+Supports multiple resolutions, for iPhone, Android, and Mac/desktop screens (landscape wallpapers auto-fit the grid instead of the fixed phone layout). All available resolutions are listed in [RESOLUTIONS.md](RESOLUTIONS.md).
 
 #### Support
 If you're using this repo, feel free to show support and give this repo a ⭐ star! It means a lot, thank you :)
