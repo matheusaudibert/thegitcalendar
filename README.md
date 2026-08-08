@@ -5,7 +5,7 @@
 [![GitHub Stars](https://img.shields.io/github/stars/matheusaudibert/thegitcalendar.svg?style=flat&logo=github)](https://github.com/matheusaudibert/thegitcalendar/stargazers)
 [![Website](https://img.shields.io/website?url=https%3A%2F%2Fcommitly.audibert.dev&style=flat&logo=vercel&label=website)](https://thegitcalendar.vercel.app/)
 [![Discord](https://img.shields.io/discord/1112920281367973900.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/programador)
-[![Twitter Follow](https://img.shields.io/twitter/follow/audibosta?style=social)](https://twitter.com/audibosta)
+[![Twitter Follow](https://img.shields.io/twitter/follow/audibertdev?style=social)](https://twitter.com/audibertdev)
 
 </div>
 
