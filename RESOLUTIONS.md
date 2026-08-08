@@ -1,6 +1,6 @@
 # Resolutions
 
-Reference list of device resolutions supported by [`/graph`](README.md), used via the `height` and `width` query params. Pick any device below.
+Reference list of device resolutions for [`/graph`](README.md), used via the `height` and `width` query params. Pick any device below — or pass any custom size you want, from `64` to `4000` px per side; this list is a convenience, not a restriction.
 
 ## iPhone
 

@@ -135,20 +135,27 @@ def render_wallpaper(
     if options.columns:
         # Fixed-column mode (the default): size the grid from the reference
         # canvas, not the live one, so it stays a constant pixel size across
-        # resolutions, then center that fixed block in the live canvas.
-        ref_margin_x = _REFERENCE_WIDTH * options.margin_ratio
-        ref_usable_w = _REFERENCE_WIDTH - 2 * ref_margin_x
+        # resolutions, then center that fixed block in the live canvas. On a
+        # canvas smaller than the reference in either axis the block wouldn't
+        # fit, so it's scaled down by the tightest of the two ratios — that's
+        # what lets `width`/`height` take arbitrary sizes (a 720x1280 phone, a
+        # landscape desktop) instead of only the phone resolutions at or above
+        # the reference. Anything that fits keeps a scale of 1, i.e. the exact
+        # same render as before.
+        scale = min(1.0, options.width / _REFERENCE_WIDTH, options.height / _REFERENCE_HEIGHT)
+        size_basis_w = _REFERENCE_WIDTH * scale
+        size_basis_h = _REFERENCE_HEIGHT * scale
+        ref_margin_x = size_basis_w * options.margin_ratio
+        ref_usable_w = size_basis_w - 2 * ref_margin_x
         columns = options.columns
         rows = math.ceil(total_days / columns)
         cell = ref_usable_w / columns
         grid_w = cell * columns
         grid_h = cell * rows
         offset_x = (options.width - grid_w) / 2
-        offset_y = _REFERENCE_HEIGHT * options.top_margin_ratio + (
-            options.height - _REFERENCE_HEIGHT
+        offset_y = size_basis_h * options.top_margin_ratio + (
+            options.height - size_basis_h
         ) / 2
-        size_basis_w = _REFERENCE_WIDTH
-        size_basis_h = _REFERENCE_HEIGHT
     else:
         # Auto-fit mode: pack the grid into whatever live canvas it's given,
         # instead of holding it to a fixed pixel size.

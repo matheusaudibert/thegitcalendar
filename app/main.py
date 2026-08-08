@@ -32,7 +32,8 @@ from .themes import (
     COLOR_THEMES,
     DEFAULT_HEIGHT,
     DEFAULT_WIDTH,
-    SUPPORTED_RESOLUTIONS,
+    MAX_DIMENSION,
+    MIN_DIMENSION,
     parse_hex_color,
     parse_level_colors,
     resolve_footer_primary,
@@ -75,19 +76,27 @@ async def _get_year_contributions(username: str, year: int) -> YearContributions
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
-def _resolve_resolution(width_raw: str | None, height_raw: str | None) -> tuple[int, int]:
-    """Snaps to a supported width/height pair, falling back to the default
-    resolution (no error) for anything unrecognized — a typo, an unsupported
-    device, non-numeric input, or just one of the two missing.
+def _resolve_dimension(raw: str | None, default: int) -> int:
+    """Any pixel size goes — there's no list of allowed resolutions. Values
+    outside the safe range are clamped to it, and missing or non-numeric input
+    falls back to the default (no error), same as an unrecognized
+    `background`/`color`.
     """
     try:
-        width = int(width_raw) if width_raw is not None else DEFAULT_WIDTH
-        height = int(height_raw) if height_raw is not None else DEFAULT_HEIGHT
+        value = int(raw) if raw is not None else default
     except (TypeError, ValueError):
-        return DEFAULT_WIDTH, DEFAULT_HEIGHT
-    if (width, height) not in SUPPORTED_RESOLUTIONS:
-        return DEFAULT_WIDTH, DEFAULT_HEIGHT
-    return width, height
+        return default
+    return max(MIN_DIMENSION, min(value, MAX_DIMENSION))
+
+
+def _resolve_resolution(width_raw: str | None, height_raw: str | None) -> tuple[int, int]:
+    """Resolves the requested canvas size; the two sides are independent, so
+    passing only one keeps the default for the other.
+    """
+    return (
+        _resolve_dimension(width_raw, DEFAULT_WIDTH),
+        _resolve_dimension(height_raw, DEFAULT_HEIGHT),
+    )
 
 
 async def _get_avatar(username: str) -> bytes | None:
@@ -167,11 +176,14 @@ async def get_wallpaper(
     username: str = Query(..., description="GitHub username to render"),
     width: str | None = Query(
         None,
-        description="Output width in px — must pair with a matching `height` from the supported "
-        "resolutions (see README); an unrecognized pair silently falls back to the default "
-        f"{DEFAULT_WIDTH}x{DEFAULT_HEIGHT} instead of erroring",
+        description=f"Output width in px — any value from {MIN_DIMENSION} to {MAX_DIMENSION}, "
+        "not just known device resolutions. Out-of-range values are clamped and non-numeric "
+        f"input falls back to {DEFAULT_WIDTH} instead of erroring",
     ),
-    height: str | None = Query(None, description="Output height in px; see `width`"),
+    height: str | None = Query(
+        None,
+        description=f"Output height in px; see `width` (defaults to {DEFAULT_HEIGHT})",
+    ),
     shape: Literal["rounded", "square", "circle"] = Query(
         "rounded", description="Dot style: 'rounded' (default, rounded-corner squares like GitHub), 'square' (sharp corners), or 'circle'"
     ),

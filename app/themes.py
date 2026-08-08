@@ -22,90 +22,15 @@ BACKGROUND_THEMES: dict[str, dict[str, str]] = {
 DEFAULT_WIDTH = 1179
 DEFAULT_HEIGHT = 2556
 
-# The exact width/height pairs thelifecalendar itself supports, one per
-# distinct iPhone or Android screen resolution (see README's "Resolutions"
-# tables, and lifecalendar_phone_links.txt for the full source list). Any
-# `width`/`height` pair that isn't one of these — a typo, an unsupported
-# device, garbage input — silently falls back to the default resolution
-# instead of erroring, same as an unrecognized `background`/`color`.
-SUPPORTED_RESOLUTIONS: set[tuple[int, int]] = {
-    (720, 1280),
-    (720, 1440),
-    (720, 1520),
-    (720, 1544),
-    (720, 1560),
-    (720, 1600),
-    (720, 1612),
-    (720, 1650),
-    (1080, 1920),
-    (1840, 2152),
-    (1080, 2160),
-    (1856, 2160),
-    (1812, 2176),
-    (1768, 2208),
-    (1840, 2208),
-    (1080, 2220),
-    (1984, 2272),
-    (2156, 2272),
-    (1080, 2280),
-    (2000, 2296),
-    (1080, 2340),
-    (2156, 2344),
-    (1080, 2376),
-    (1080, 2388),
-    (1080, 2392),
-    (1080, 2400),
-    (1176, 2400),
-    (1080, 2404),
-    (1080, 2408),
-    (1080, 2412),
-    (1084, 2412),
-    (1080, 2424),
-    (1080, 2448),
-    (1080, 2460),
-    (1116, 2480),
-    (1116, 2484),
-    (2268, 2484),
-    (2224, 2504),
-    (1080, 2520),
-    (1170, 2532),
-    (DEFAULT_WIDTH, DEFAULT_HEIGHT),
-    (1440, 2560),
-    (1212, 2616),
-    (1206, 2622),
-    (1080, 2640),
-    (1200, 2652),
-    (1200, 2664),
-    (1200, 2670),
-    (1236, 2676),
-    (1216, 2688),
-    (1220, 2700),
-    (1224, 2700),
-    (1228, 2700),
-    (1220, 2712),
-    (1260, 2720),
-    (1240, 2772),
-    (1344, 2772),
-    (1284, 2778),
-    (1264, 2780),
-    (1290, 2796),
-    (1260, 2800),
-    (1280, 2800),
-    (1260, 2844),
-    (1312, 2848),
-    (1280, 2856),
-    (1320, 2868),
-    (1440, 2880),
-    (1440, 2960),
-    (1344, 2992),
-    (1440, 3040),
-    (1440, 3088),
-    (1440, 3120),
-    (1440, 3168),
-    (1440, 3200),
-    (1440, 3216),
-    (1644, 3840),
-}
+# `width`/`height` accept any size in this range — they're not restricted to a
+# list of known device resolutions. The layout scales itself to whatever canvas
+# it's given (see render.py), so arbitrary pairs render correctly instead of
+# being snapped to a preset. Anything outside the range is clamped rather than
+# rejected, and non-numeric input falls back to the default, same as an
+# unrecognized `background`/`color`. The upper bound just keeps a single
+# request from allocating an absurd image.
+MIN_DIMENSION = 64
+MAX_DIMENSION = 4000
 
 DEFAULT_LEVEL_COLORS = ["161b22", "0e4429", "006d32", "26a641", "39d353"]
 DEFAULT_FUTURE_COLOR = "21262d"

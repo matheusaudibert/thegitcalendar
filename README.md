@@ -25,8 +25,8 @@ Renders the wallpaper image. `username` is the only required param, everything e
 | Param | Default | Description |
 |---|---|---|
 | `username` | _(required)_ | GitHub username to render |
-| `height` | `2556` | Output height in px. |
-| `width` | `1179` | Output width in px. |
+| `height` | `2556` | Output height in px. Any value from `64` to `4000`. |
+| `width` | `1179` | Output width in px. Any value from `64` to `4000`. |
 | `shape` | `rounded` | Shape of the commit: `rounded` (rounded-corner squares, like GitHub), `square` (sharp corners), or `circle`. |
 | `background` | `github` | Named background preset: `github` (`#0d1117`), `dark` (`#1a1a1a`), or `light` (`#ffffff`). |
 | `color` | _(none)_ | Named theme for commit levels 1-4: `green`, `blue`, `purple`, `red`, `yellow`, `orange`, `pink`, `white`, `black` |
@@ -51,7 +51,7 @@ Chekout the [EXAMPLES.md](EXAMPLES.md) to see all the possible example.
 
 #### Resolutions
 
-Supports multiple resolutions, for both iPhone and Android devices. All available resolutions are listed in [RESOLUTIONS.md](RESOLUTIONS.md).
+Any resolution works, the layout scales to whatever `width`/`height` you ask for, from `64` up to `4000` px per side (values outside that are clamped, non-numeric input falls back to the default). [RESOLUTIONS.md](RESOLUTIONS.md) lists the ready-made iPhone and Android sizes if you just want to pick your device.
 
 #### Support
 If you're using this repo, feel free to show support and give this repo a ⭐ star! It means a lot, thank you :)
