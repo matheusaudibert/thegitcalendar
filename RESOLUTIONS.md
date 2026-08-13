@@ -6,16 +6,17 @@ Reference list of device resolutions for [`/graph`](README.md), used via the `he
 
 | Device | Height | Width |
 |---|---|---|
-| iPhone 13 / 13 Pro / 14 / 14 Pro | 2532 | 1170 |
-| iPhone 13 mini | 2340 | 1080 |
-| iPhone 13 Pro Max / 14 Plus / 14 Pro Max | 2778 | 1284 |
-| iPhone 15 / 15 Pro / 16 | 2556 | 1179 |
-| iPhone 15 Plus / 15 Pro Max / 16 Plus | 2796 | 1290 |
-| iPhone 16 Pro | 2622 | 1206 |
-| iPhone 16 Pro Max | 2868 | 1320 |
-| iPhone 17 | 2556 | 1179 |
-| iPhone 17 Pro | 2622 | 1206 |
-| iPhone 17 Pro Max | 2868 | 1320 |
+| iPhone 11 | 1792 | 828 |
+| iPhone 11 Pro | 2436 | 1125 |
+| iPhone 11 Pro Max | 2688 | 1242 |
+| iPhone 12 / 12 Pro / 13 / 13 Pro / 14 / 16e / 17e | 2532 | 1170 |
+| iPhone 12 mini / 13 mini | 2340 | 1080 |
+| iPhone 12 Pro Max / 13 Pro Max / 14 Plus | 2778 | 1284 |
+| iPhone 14 Pro / 15 / 15 Pro / 16 | 2556 | 1179 |
+| iPhone 14 Pro Max / 15 Plus / 15 Pro Max / 16 Plus | 2796 | 1290 |
+| iPhone 16 Pro / 17 / 17 Pro | 2622 | 1206 |
+| iPhone 16 Pro Max / 17 Pro Max | 2868 | 1320 |
+| iPhone Air | 2736 | 1260 |
 
 ## Android
 

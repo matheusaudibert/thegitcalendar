@@ -5,4 +5,7 @@ venv/
 .env
 .pytest_cache/
 *.egg-info/
-*.txt
+android_resolutions.txt
+iphone_resolutions.txt
+*.csv
+RESOLUTIONS.md
