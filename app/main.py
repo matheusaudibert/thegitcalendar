@@ -8,6 +8,12 @@ from __future__ import annotations
 import re
 from typing import Literal
 
+from dotenv import load_dotenv
+
+# Local dev reads GITHUB_TOKEN from .env; in production (Vercel) the real
+# environment variable is used and this is a no-op.
+load_dotenv()
+
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.exception_handlers import (
     http_exception_handler,
@@ -99,13 +105,16 @@ def _resolve_resolution(width_raw: str | None, height_raw: str | None) -> tuple[
     )
 
 
-async def _get_avatar(username: str) -> bytes | None:
+async def _get_avatar(contrib: YearContributions) -> bytes:
+    # The avatar + @username row is a required part of the wallpaper, so a
+    # failed avatar fetch fails the whole request (as an error image) rather
+    # than silently rendering without it.
     try:
         return await _avatar_cache.get_or_fetch(
-            username.lower(), lambda: fetch_avatar(username)
+            contrib.username.lower(), lambda: fetch_avatar(contrib.avatar_url)
         )
-    except (GitHubUserNotFoundError, GitHubFetchError):
-        return None
+    except GitHubFetchError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
 def _error_image_response(
@@ -225,7 +234,7 @@ async def get_wallpaper(
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 
         contrib = await _get_year_contributions(username, clock_today().year)
-        avatar_bytes = await _get_avatar(username)
+        avatar_bytes = await _get_avatar(contrib)
         png_bytes = render_wallpaper_png(contrib, options, avatar_bytes)
 
         return Response(
