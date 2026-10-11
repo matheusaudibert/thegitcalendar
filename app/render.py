@@ -43,6 +43,43 @@ RGBA = tuple[int, int, int, int]
 _REFERENCE_WIDTH = 1179
 _REFERENCE_HEIGHT = 2556
 
+# iPhone lock screens get their own layout, keyed by exact native resolution
+# -> (width pt, height pt, top safe area pt). It's laid out in the points the
+# lock screen UI uses, so the grid clears the clock and the footer sits
+# between the flashlight/camera buttons on every model. Any other size
+# (Android, desktop, custom) keeps the reference-canvas layout below — and
+# so do the Pro Max sizes, on purpose: 1290x2796 (14 Pro Max / 15 Plus /
+# 15 Pro Max / 16 Plus) and 1320x2868 (16 / 17 / 18 Pro Max). Tested on a
+# real 15 Pro Max, the reference layout looked better there.
+_IPHONE_SCREENS: dict[tuple[int, int], tuple[float, float, float]] = {
+    (828, 1792): (414, 896, 48),  # 11
+    (1125, 2436): (375, 812, 44),  # 11 Pro
+    (1242, 2688): (414, 896, 44),  # 11 Pro Max
+    (1080, 2340): (375, 812, 50),  # 12 mini / 13 mini
+    (1170, 2532): (390, 844, 47),  # 12 / 12 Pro / 13 / 13 Pro / 14 / 16e / 17e
+    (1284, 2778): (428, 926, 47),  # 12 Pro Max / 13 Pro Max / 14 Plus
+    (1179, 2556): (393, 852, 59),  # 14 Pro / 15 / 15 Pro / 16
+    (1206, 2622): (402, 874, 62),  # 16 Pro / 17 / 17 Pro / 18 Pro
+    (1260, 2736): (420, 912, 68),  # Air
+}
+# iOS scales the wallpaper up around the screen center (measured 1.141x on an
+# iPhone 12 and 1.144x on an iPhone 15). Everything is laid out in *visible*
+# points for this worst case and then shrunk back by it, so it clears the
+# lock screen UI with the zoom on — and with no zoom at all it just ends up a
+# bit smaller and further from that UI, never under it.
+_IOS_WALLPAPER_ZOOM = 1.15
+_IOS_CLOCK_BOTTOM = 170  # pt below the top safe area; tallest (stretched) clock seen
+_IOS_CLOCK_GAP = 14
+_IOS_BUTTON_FROM_BOTTOM = 79  # flashlight/camera button centers
+_IOS_BUTTON_FROM_SIDE = 75
+_IOS_BUTTON_RADIUS = 29
+_IOS_BUTTON_GAP = 10
+_IOS_SIDE_MARGIN = 20
+# Font/avatar sizes keep their reference-canvas ratios, measured against the
+# reference iPhone's width/height in points.
+_IOS_DESIGN_PT_W = 393
+_IOS_DESIGN_PT_H = 852
+
 _FONTS_DIR = Path(__file__).parent / "assets" / "fonts"
 _REGULAR_FONT_CANDIDATES = [
     str(_FONTS_DIR / "MonaSans-Regular.ttf"),
@@ -132,7 +169,33 @@ def render_wallpaper(
     img = Image.new("RGBA", (options.width, options.height), options.bg_color)
     draw = ImageDraw.Draw(img)
 
-    if options.columns:
+    ios_screen = _IPHONE_SCREENS.get((options.width, options.height)) if options.columns else None
+    footer_center_y: float | None = None
+    footer_max_w: float | None = None
+
+    if ios_screen:
+        pt_w, pt_h, safe_top = ios_screen
+        px_per_pt = options.width / pt_w
+        k = px_per_pt / _IOS_WALLPAPER_ZOOM  # image px per visible pt
+
+        def visible_pt_to_y(y_pt: float) -> float:
+            return options.height / 2 + (y_pt * px_per_pt - options.height / 2) / _IOS_WALLPAPER_ZOOM
+
+        top_pt = safe_top + _IOS_CLOCK_BOTTOM + _IOS_CLOCK_GAP
+        bottom_pt = pt_h - _IOS_BUTTON_FROM_BOTTOM - _IOS_BUTTON_RADIUS - _IOS_BUTTON_GAP
+        columns = options.columns
+        rows = math.ceil(total_days / columns)
+        cell = min((pt_w - 2 * _IOS_SIDE_MARGIN) / columns, (bottom_pt - top_pt) / rows) * k
+        grid_w = cell * columns
+        grid_h = cell * rows
+        offset_x = (options.width - grid_w) / 2
+        offset_y = visible_pt_to_y((top_pt + bottom_pt) / 2) - grid_h / 2
+        size_basis_w = _IOS_DESIGN_PT_W * k
+        size_basis_h = _IOS_DESIGN_PT_H * k
+        # Footer: centered on the flashlight/camera row, in the gap between them.
+        footer_center_y = visible_pt_to_y(pt_h - _IOS_BUTTON_FROM_BOTTOM)
+        footer_max_w = (pt_w - 2 * (_IOS_BUTTON_FROM_SIDE + _IOS_BUTTON_RADIUS + _IOS_BUTTON_GAP)) * k
+    elif options.columns:
         # Fixed-column mode (the default): size the grid from the reference
         # canvas, not the live one, so it stays a constant pixel size across
         # resolutions, then center that fixed block in the live canvas. On a
@@ -223,22 +286,53 @@ def render_wallpaper(
             else ""
         )
 
-        primary_font = _load_font(max(10, round(size_basis_w * 0.036)), bold=False)
-        secondary_font = primary_font
+        show_profile = bool(options.show_profile and avatar_bytes)
+        username_text = f"@{contrib.username}"
 
-        line_top = offset_y + grid_h + size_basis_h * options.footer_gap_ratio - 3
-        part_gap = draw.textlength(" ", font=primary_font)
+        # Measure at full size first; when the footer has a max width (the gap
+        # between the iPhone flashlight/camera buttons) and a long commit count
+        # or username overflows it, shrink the whole block once to fit.
+        font_scale = 1.0
+        for _ in range(2):
+            primary_font = _load_font(max(10, round(size_basis_w * 0.036 * font_scale)), bold=False)
+            secondary_font = primary_font
+            part_gap = draw.textlength(" ", font=primary_font)
 
-        primary_bbox = draw.textbbox((0, 0), primary_text, font=primary_font)
-        primary_w = primary_bbox[2] - primary_bbox[0]
-        secondary_bbox = (
-            draw.textbbox((0, 0), secondary_text, font=secondary_font)
-            if secondary_text
-            else (0, 0, 0, 0)
-        )
-        secondary_w = secondary_bbox[2] - secondary_bbox[0] if secondary_text else 0
+            primary_bbox = draw.textbbox((0, 0), primary_text, font=primary_font)
+            primary_w = primary_bbox[2] - primary_bbox[0]
+            secondary_bbox = (
+                draw.textbbox((0, 0), secondary_text, font=secondary_font)
+                if secondary_text
+                else (0, 0, 0, 0)
+            )
+            secondary_w = secondary_bbox[2] - secondary_bbox[0] if secondary_text else 0
+            total_w = primary_w + (part_gap + secondary_w if secondary_text else 0)
 
-        total_w = primary_w + (part_gap + secondary_w if secondary_text else 0)
+            row_w = 0.0
+            if show_profile:
+                avatar_diameter = round(size_basis_w * options.avatar_size_ratio * font_scale)
+                profile_font = _load_font(max(10, round(size_basis_w * 0.026 * font_scale)))
+                username_bbox = draw.textbbox((0, 0), username_text, font=profile_font)
+                username_w = username_bbox[2] - username_bbox[0]
+                username_h = username_bbox[3] - username_bbox[1]
+                profile_gap = size_basis_w * 0.01 * font_scale
+                row_w = avatar_diameter + profile_gap + username_w
+
+            widest = max(total_w, row_w)
+            if footer_max_w is None or widest <= footer_max_w:
+                break
+            font_scale *= footer_max_w / widest
+
+        primary_h = primary_bbox[3] - primary_bbox[1]
+        row_gap = size_basis_h * options.profile_gap_ratio
+        if footer_center_y is None:
+            line_top = offset_y + grid_h + size_basis_h * options.footer_gap_ratio - 3
+            row_offset = 0.0
+        else:
+            # Center the visible block (text + avatar row) on footer_center_y.
+            block_h = primary_h + (row_gap + avatar_diameter if show_profile else 0)
+            line_top = footer_center_y - block_h / 2 - primary_bbox[1]
+            row_offset = primary_bbox[1]
         # Both parts share one font, so drawing them at the same y (using PIL's
         # default ascender-based anchor) keeps them on the same line — no need
         # to align via each string's own bbox, which varies with descenders.
@@ -258,20 +352,9 @@ def render_wallpaper(
                 fill=options.footer_secondary_color,
             )
 
-        if options.show_profile and avatar_bytes:
-            primary_h = primary_bbox[3] - primary_bbox[1]
-            avatar_diameter = round(size_basis_w * options.avatar_size_ratio)
+        if show_profile:
             avatar = _circular(Image.open(io.BytesIO(avatar_bytes)), avatar_diameter)
-
-            username_text = f"@{contrib.username}"
-            profile_font = _load_font(max(10, round(size_basis_w * 0.026)))
-            username_bbox = draw.textbbox((0, 0), username_text, font=profile_font)
-            username_w = username_bbox[2] - username_bbox[0]
-            username_h = username_bbox[3] - username_bbox[1]
-
-            profile_gap = size_basis_w * 0.01
-            row_w = avatar_diameter + profile_gap + username_w
-            row_top = line_top + primary_h + size_basis_h * options.profile_gap_ratio
+            row_top = line_top + row_offset + primary_h + row_gap
             row_x = options.width / 2 - row_w / 2
 
             img.paste(avatar, (round(row_x), round(row_top)), avatar)

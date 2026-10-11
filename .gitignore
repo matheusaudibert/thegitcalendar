@@ -9,3 +9,8 @@ android_resolutions.txt
 iphone_resolutions.txt
 *.csv
 RESOLUTIONS.md
+# auditoria local de resoluções de iPhone
+iphone_audit/
+
+# prints de teste
+image*.png

@@ -51,7 +51,7 @@ Chekout the [EXAMPLES.md](EXAMPLES.md) to see all the possible example.
 
 #### Resolutions
 
-Any resolution works, the layout scales to whatever `width`/`height` you ask for, from `64` up to `4000` px per side (values outside that are clamped, non-numeric input falls back to the default). [RESOLUTIONS.md](RESOLUTIONS.md) lists the ready-made iPhone and Android sizes if you just want to pick your device.
+Any resolution works, the layout scales to whatever `width`/`height` you ask for, from `64` up to `4000` px per side (values outside that are clamped, non-numeric input falls back to the default).
 
 #### Support
 If you're using this repo, feel free to show support and give this repo a ⭐ star! It means a lot, thank you :)
