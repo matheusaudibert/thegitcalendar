@@ -23,15 +23,17 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import PlainTextResponse, Response
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from .cache import TTLCache
+from .cache import DEFAULT_TTL_SECONDS, TTLCache
 from .clock import today as clock_today
 from .github_client import (
     GitHubFetchError,
     GitHubUserNotFoundError,
-    YearContributions,
-    fetch_avatar,
-    fetch_year_contributions,
+    ProfileData,
+    decode_profile,
+    encode_profile,
+    fetch_profile,
 )
+from .shared_cache import SharedCache
 from .render import WallpaperOptions, render_error_png, render_wallpaper_png
 from .themes import (
     BACKGROUND_THEMES,
@@ -58,8 +60,14 @@ app = FastAPI(
     openapi_url=None,
 )
 
-_cache: TTLCache[YearContributions] = TTLCache()
-_avatar_cache: TTLCache[bytes] = TTLCache()
+# Two cache layers in front of GitHub, both keyed only by user + year — never
+# by the rendering options — so every personalization of the same profile
+# reuses one fetch: an in-process cache (free, but per serverless instance)
+# backed by Redis (shared across instances; skipped if not configured).
+_cache: TTLCache[ProfileData] = TTLCache()
+_shared_cache: SharedCache[ProfileData] = SharedCache.from_env(
+    ttl_seconds=DEFAULT_TTL_SECONDS, encode=encode_profile, decode=decode_profile
+)
 
 USERNAME_RE = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$")
 
@@ -70,11 +78,15 @@ def _validate_username(username: str) -> str:
     return username
 
 
-async def _get_year_contributions(username: str, year: int) -> YearContributions:
-    key = f"{username.lower()}:{year}"
+async def _get_profile(username: str, year: int) -> ProfileData:
+    # The avatar + @username row is a required part of the wallpaper, so a
+    # failed avatar fetch fails the whole request (as an error image) rather
+    # than silently rendering without it.
+    key = f"profile:{username.lower()}:{year}"
     try:
         return await _cache.get_or_fetch(
-            key, lambda: fetch_year_contributions(username, year)
+            key,
+            lambda: _shared_cache.get_or_fetch(key, lambda: fetch_profile(username, year)),
         )
     except GitHubUserNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
@@ -103,18 +115,6 @@ def _resolve_resolution(width_raw: str | None, height_raw: str | None) -> tuple[
         _resolve_dimension(width_raw, DEFAULT_WIDTH),
         _resolve_dimension(height_raw, DEFAULT_HEIGHT),
     )
-
-
-async def _get_avatar(contrib: YearContributions) -> bytes:
-    # The avatar + @username row is a required part of the wallpaper, so a
-    # failed avatar fetch fails the whole request (as an error image) rather
-    # than silently rendering without it.
-    try:
-        return await _avatar_cache.get_or_fetch(
-            contrib.username.lower(), lambda: fetch_avatar(contrib.avatar_url)
-        )
-    except GitHubFetchError as exc:
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
 def _error_image_response(
@@ -233,14 +233,15 @@ async def get_wallpaper(
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-        contrib = await _get_year_contributions(username, clock_today().year)
-        avatar_bytes = await _get_avatar(contrib)
-        png_bytes = render_wallpaper_png(contrib, options, avatar_bytes)
+        profile = await _get_profile(username, clock_today().year)
+        png_bytes = render_wallpaper_png(profile.contributions, options, profile.avatar)
 
         return Response(
             content=png_bytes,
             media_type="image/png",
-            headers={"Cache-Control": "public, max-age=3600"},
+            # s-maxage lets Vercel's CDN serve repeat hits of the exact same
+            # URL without running the function at all.
+            headers={"Cache-Control": "public, max-age=3600, s-maxage=3600"},
         )
     except HTTPException as exc:
         # Always hand back an image, even on failure, so automation that

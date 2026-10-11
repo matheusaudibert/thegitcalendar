@@ -17,6 +17,8 @@ Two sources, fetched together:
 from __future__ import annotations
 
 import asyncio
+import base64
+import json
 import os
 import re
 import time
@@ -270,3 +272,54 @@ def iter_year_dates(year: int):
     while d <= end:
         yield d
         d += timedelta(days=1)
+
+
+@dataclass(frozen=True)
+class ProfileData:
+    """Everything fetched from GitHub for one user/year — the expensive part.
+    Rendering options (colors, shape, size) are applied on top of this, so
+    every personalization of the same profile reuses one cached ProfileData.
+    """
+
+    contributions: YearContributions
+    avatar: bytes
+
+
+def encode_profile(profile: ProfileData) -> str:
+    c = profile.contributions
+    return json.dumps(
+        {
+            "username": c.username,
+            "avatar_url": c.avatar_url,
+            "year": c.year,
+            "fetched_at": c.fetched_at,
+            "days": [[d.isoformat(), v.level, v.count] for d, v in c.days.items()],
+            "avatar": base64.b64encode(profile.avatar).decode("ascii"),
+        },
+        separators=(",", ":"),
+    )
+
+
+def decode_profile(raw: str) -> ProfileData:
+    data = json.loads(raw)
+    days = {}
+    for iso, level, count in data["days"]:
+        day = date.fromisoformat(iso)
+        days[day] = DayData(date=day, level=level, count=count)
+    return ProfileData(
+        contributions=YearContributions(
+            username=data["username"],
+            avatar_url=data["avatar_url"],
+            year=data["year"],
+            days=days,
+            fetched_at=data["fetched_at"],
+        ),
+        avatar=base64.b64decode(data["avatar"]),
+    )
+
+
+async def fetch_profile(username: str, year: int) -> ProfileData:
+    """Fetch a user's contributions for `year` plus their avatar image."""
+    contributions = await fetch_year_contributions(username, year)
+    avatar = await fetch_avatar(contributions.avatar_url)
+    return ProfileData(contributions=contributions, avatar=avatar)
