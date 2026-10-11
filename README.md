@@ -38,11 +38,11 @@ GET https://gitcalendar-image.vercel.app/graph?username=matheusaudibert
 
 Example with all params: 
 ```
-GET https://gitcalendar-image.vercel.app/graph?username=matheusaudibert&background=github&color=green&shape=rounded&height=2556&width=1179
+GET https://gitcalendar-image.vercel.app/graph?username=matheusaudibert&background=dark&color=green&shape=rounded&height=2556&width=1179
 ```
 Image example:
 
-<a href="https://thegitcalendar.vercel.app/"><img src="https://gitcalendar-image.vercel.app/graph?username=matheusaudibert" alt="The Git Calendar" height=400px></a>
+<a href="https://thegitcalendar.vercel.app/"><img src="https://gitcalendar-image.vercel.app/graph?username=matheusaudibert&background=dark&color=green&shape=rounded&height=2556&width=1179" alt="The Git Calendar" height=400px></a>
 
 #### Resolutions
 
