@@ -48,9 +48,11 @@ _REFERENCE_HEIGHT = 2556
 # lock screen UI uses, so the grid clears the clock and the footer sits
 # between the flashlight/camera buttons on every model. Any other size
 # (Android, desktop, custom) keeps the reference-canvas layout below — and
-# so do the Pro Max sizes, on purpose: 1290x2796 (14 Pro Max / 15 Plus /
-# 15 Pro Max / 16 Plus) and 1320x2868 (16 / 17 / 18 Pro Max). Tested on a
-# real 15 Pro Max, the reference layout looked better there.
+# so do these iPhone sizes, on purpose, since the reference layout looked
+# better on them when tested on real devices: 1179x2556 (14 Pro / 15 /
+# 15 Pro / 16), 1206x2622 (16 Pro / 17 / 17 Pro / 18 Pro), 1290x2796
+# (14 Pro Max / 15 Plus / 15 Pro Max / 16 Plus) and 1320x2868 (16 / 17 /
+# 18 Pro Max).
 _IPHONE_SCREENS: dict[tuple[int, int], tuple[float, float, float]] = {
     (828, 1792): (414, 896, 48),  # 11
     (1125, 2436): (375, 812, 44),  # 11 Pro
@@ -58,8 +60,6 @@ _IPHONE_SCREENS: dict[tuple[int, int], tuple[float, float, float]] = {
     (1080, 2340): (375, 812, 50),  # 12 mini / 13 mini
     (1170, 2532): (390, 844, 47),  # 12 / 12 Pro / 13 / 13 Pro / 14 / 16e / 17e
     (1284, 2778): (428, 926, 47),  # 12 Pro Max / 13 Pro Max / 14 Plus
-    (1179, 2556): (393, 852, 59),  # 14 Pro / 15 / 15 Pro / 16
-    (1206, 2622): (402, 874, 62),  # 16 Pro / 17 / 17 Pro / 18 Pro
     (1260, 2736): (420, 912, 68),  # Air
 }
 # iOS scales the wallpaper up around the screen center (measured 1.141x on an
