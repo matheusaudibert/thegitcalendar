@@ -45,10 +45,6 @@ Image example:
 
 <a href="https://thegitcalendar.vercel.app/"><img src="https://gitcalendar-image.vercel.app/graph?username=matheusaudibert" alt="The Git Calendar" height=400px></a>
 
-#### Live examples
-
-Chekout the [EXAMPLES.md](EXAMPLES.md) to see all the possible example.
-
 #### Resolutions
 
 Any resolution works, the layout scales to whatever `width`/`height` you ask for, from `64` up to `4000` px per side (values outside that are clamped, non-numeric input falls back to the default).
