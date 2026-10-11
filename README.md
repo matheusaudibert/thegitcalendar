@@ -42,7 +42,7 @@ GET https://gitcalendar-image.vercel.app/graph?username=matheusaudibert&backgrou
 ```
 Image example:
 
-<a href="https://thegitcalendar.vercel.app/"><img src="https://gitcalendar-image.vercel.app/graph?username=matheusaudibert&background=dark&color=green&shape=rounded&height=2556&width=1179" alt="The Git Calendar" height=400px></a>
+<img src="https://gitcalendar-image.vercel.app/graph?username=matheusaudibert&background=dark&color=green&shape=rounded&height=2556&width=1179" alt="The Git Calendar" height=400px>
 
 #### Resolutions
 
