@@ -4,7 +4,6 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/matheusaudibert/thegitcalendar.svg?style=flat&logo=github)](https://github.com/matheusaudibert/thegitcalendar/stargazers)
 [![Website](https://img.shields.io/website?url=https%3A%2F%2Fcommitly.audibert.dev&style=flat&logo=vercel&label=website)](https://thegitcalendar.vercel.app/)
-[![Discord](https://img.shields.io/discord/1112920281367973900.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/programador)
 [![Twitter Follow](https://img.shields.io/twitter/follow/audibertdev?style=social)](https://twitter.com/audibertdev)
 
 </div>
@@ -47,7 +46,7 @@ Image example:
 
 #### Resolutions
 
-Any resolution works, the layout scales to whatever `width`/`height` you ask for, from `64` up to `4000` px per side (values outside that are clamped, non-numeric input falls back to the default).
+[RESOLUTIONS.md](RESOLUTIONS.md) lists every resolution already mapped for the API, iPhone and Android, with the exact `height` and `width` to use for each device. Any other size from `64` to `4000` px per side works too.
 
 #### Support
 If you're using this repo, feel free to show support and give this repo a ⭐ star! It means a lot, thank you :)
