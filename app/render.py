@@ -45,8 +45,8 @@ _REFERENCE_HEIGHT = 2556
 
 # iPhone lock screens get their own layout, keyed by exact native resolution
 # -> (width pt, height pt, top safe area pt). It's laid out in the points the
-# lock screen UI uses, so the grid clears the clock and the footer sits
-# between the flashlight/camera buttons on every model. Any other size
+# lock screen UI uses, so the grid clears the clock and the footer stays
+# narrower than the flashlight/camera gap on every model. Any other size
 # (Android, desktop, custom) keeps the reference-canvas layout below — and
 # so do these iPhone sizes, on purpose, since the reference layout looked
 # better on them when tested on real devices: 1179x2556 (14 Pro / 15 /
@@ -170,7 +170,6 @@ def render_wallpaper(
     draw = ImageDraw.Draw(img)
 
     ios_screen = _IPHONE_SCREENS.get((options.width, options.height)) if options.columns else None
-    footer_center_y: float | None = None
     footer_max_w: float | None = None
 
     if ios_screen:
@@ -192,8 +191,8 @@ def render_wallpaper(
         offset_y = visible_pt_to_y((top_pt + bottom_pt) / 2) - grid_h / 2
         size_basis_w = _IOS_DESIGN_PT_W * k
         size_basis_h = _IOS_DESIGN_PT_H * k
-        # Footer: centered on the flashlight/camera row, in the gap between them.
-        footer_center_y = visible_pt_to_y(pt_h - _IOS_BUTTON_FROM_BOTTOM)
+        # Footer keeps the reference spacing below the grid; only its width is
+        # capped to the gap between the flashlight/camera buttons.
         footer_max_w = (pt_w - 2 * (_IOS_BUTTON_FROM_SIDE + _IOS_BUTTON_RADIUS + _IOS_BUTTON_GAP)) * k
     elif options.columns:
         # Fixed-column mode (the default): size the grid from the reference
@@ -324,15 +323,16 @@ def render_wallpaper(
             font_scale *= footer_max_w / widest
 
         primary_h = primary_bbox[3] - primary_bbox[1]
+        # Same spacing as the reference canvas (iPhone 15 Pro Max) everywhere:
+        # grid -> text and text -> avatar row are fixed ratios of size_basis,
+        # so they only scale with the canvas, never change proportion.
         row_gap = size_basis_h * options.profile_gap_ratio
-        if footer_center_y is None:
-            line_top = offset_y + grid_h + size_basis_h * options.footer_gap_ratio - 3
-            row_offset = 0.0
-        else:
-            # Center the visible block (text + avatar row) on footer_center_y.
-            block_h = primary_h + (row_gap + avatar_diameter if show_profile else 0)
-            line_top = footer_center_y - block_h / 2 - primary_bbox[1]
-            row_offset = primary_bbox[1]
+        line_top = (
+            offset_y
+            + grid_h
+            + size_basis_h * options.footer_gap_ratio
+            - 3 * size_basis_w / _REFERENCE_WIDTH
+        )
         # Both parts share one font, so drawing them at the same y (using PIL's
         # default ascender-based anchor) keeps them on the same line — no need
         # to align via each string's own bbox, which varies with descenders.
@@ -354,7 +354,7 @@ def render_wallpaper(
 
         if show_profile:
             avatar = _circular(Image.open(io.BytesIO(avatar_bytes)), avatar_diameter)
-            row_top = line_top + row_offset + primary_h + row_gap
+            row_top = line_top + primary_h + row_gap
             row_x = options.width / 2 - row_w / 2
 
             img.paste(avatar, (round(row_x), round(row_top)), avatar)
