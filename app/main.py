@@ -69,6 +69,13 @@ _shared_cache: SharedCache[ProfileData] = SharedCache.from_env(
     ttl_seconds=DEFAULT_TTL_SECONDS, encode=encode_profile, decode=decode_profile
 )
 
+# Footer "this year" text per `language` query param; unknown values fall
+# back to English, like the other named params.
+FOOTER_SECONDARY_BY_LANGUAGE = {
+    "en": "this year",
+    "pt": "este ano",
+}
+
 USERNAME_RE = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$")
 
 
@@ -205,12 +212,18 @@ async def get_wallpaper(
         description="Named color theme for levels 1-4: green, blue, purple, red, yellow, orange, "
         "pink, white, black. Falls back to green if unrecognized",
     ),
+    language: str = Query(
+        "en",
+        description="Footer language: 'en' ('this year') or 'pt' ('este ano'). Falls back to en if unrecognized",
+    ),
 ) -> Response:
     width_px, height_px = _resolve_resolution(width, height)
     if background not in BACKGROUND_THEMES:
         background = "github"
     if color is not None and color not in COLOR_THEMES:
         color = None
+    if language not in FOOTER_SECONDARY_BY_LANGUAGE:
+        language = "en"
 
     try:
         username = _validate_username(username)
@@ -229,6 +242,7 @@ async def get_wallpaper(
                 future_color=parse_hex_color(theme["future"]),
                 today_color=parse_hex_color(theme["today"]),
                 footer_primary_color=parse_hex_color(resolved_footer_primary),
+                footer_secondary_template=FOOTER_SECONDARY_BY_LANGUAGE[language],
             )
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc

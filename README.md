@@ -29,6 +29,7 @@ Renders the wallpaper image. `username` is the only required param, everything e
 | `shape` | `rounded` | Shape of the commit: `rounded` (rounded-corner squares, like GitHub), `square` (sharp corners), or `circle`. |
 | `background` | `github` | Named background preset: `github` (`#0d1117`), `dark` (`#1a1a1a`), or `light` (`#ffffff`). |
 | `color` | _(none)_ | Named theme for commit levels 1-4: `green`, `blue`, `purple`, `red`, `yellow`, `orange`, `pink`, `white`, `black` |
+| `language` | `en` | Footer language: `en` ("this year") or `pt` ("este ano"). |
 
 Example:
 
@@ -38,11 +39,11 @@ GET https://gitcalendar-image.vercel.app/graph?username=matheusaudibert
 
 Example with all params: 
 ```
-GET https://gitcalendar-image.vercel.app/graph?username=matheusaudibert&background=dark&color=green&shape=rounded&height=2556&width=1179
+GET https://gitcalendar-image.vercel.app/graph?username=matheusaudibert&background=dark&color=green&shape=rounded&language=en&height=2556&width=1179
 ```
 Image example:
 
-<img src="https://gitcalendar-image.vercel.app/graph?username=matheusaudibert&background=dark&color=green&shape=rounded&height=2556&width=1179" alt="The Git Calendar" height=400px>
+<img src="https://gitcalendar-image.vercel.app/graph?username=matheusaudibert&background=dark&color=green&shape=rounded&language=en&height=2556&width=1179" alt="The Git Calendar" height=400px>
 
 #### Resolutions
 
